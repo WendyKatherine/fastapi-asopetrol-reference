@@ -1,0 +1,36 @@
+.PHONY: install up down logs run migrate lint fix type test check
+
+install:      ## Install dependencies (incl. dev)
+	uv sync --extra dev  
+	uv sync
+
+up:           ## Start Postgres
+	docker compose up -d postgres
+
+down:         ## Stop and remove containers
+	docker compose down
+
+logs:         ## Tail container logs
+	docker compose logs -f
+
+run:          ## Run the API locally with autoreload
+	uv run uvicorn app.interface.api.app:app --reload
+
+migrate:      ## Apply DB migrations
+	uv run alembic upgrade head
+
+lint:         ## Lint + format check
+	uv run ruff check .
+	uv run ruff format --check .
+
+fix:          ## Auto-fix lint issues + format
+	uv run ruff check . --fix
+	uv run ruff format .
+
+type:         ## Static type checking
+	uv run mypy src
+
+test:         ## Run tests
+	uv run pytest
+
+check: lint type test  ## Run the full quality gate
